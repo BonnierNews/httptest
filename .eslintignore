@@ -1,0 +1,6 @@
+tmp/
+public/
+logs/
+docs/
+/worker.js
+*.marko
