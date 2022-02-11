@@ -35,6 +35,97 @@ describe("httptest", () => {
     });
   });
 
+  describe("get", () => {
+    it("returns body", async () => {
+      const resp = await request(app)
+        .get("/")
+        .expect(200)
+        .expect("content-length", "7");
+      expect(resp.text).to.be.ok;
+    });
+  });
+
+  describe("put", () => {
+    it("put object body returns 200", async () => {
+      const resp = await request(app)
+        .put("/api", { foo: "bar" })
+        .expect(200);
+
+      expect(resp.body).to.equal("{\"foo\":\"bar\"}");
+    });
+
+    it("put object body and json returns json object", async () => {
+      const resp = await request(app)
+        .put("/api", { foo: "bar" })
+        .json()
+        .expect(200)
+        .expect("content-type", "application/json; charset=utf-8");
+
+      expect(resp.body).to.deep.equal({ foo: "bar" });
+    });
+
+    it("put stringified object body with content type header returns json object", async () => {
+      const resp = await request(app)
+        .put("/api", JSON.stringify({ foo: "bar" }))
+        .set("content-type", "application/json")
+        .json()
+        .expect(200)
+        .expect("content-type", "application/json; charset=utf-8");
+
+      expect(resp.body).to.deep.equal({ foo: "bar" });
+    });
+
+    it("put body as string with content-type is ok", async () => {
+      const resp = await request(app)
+        .put("/content", "<foo/>")
+        .set("content-type", "text/plain")
+        .expect(200)
+        .expect("content-type", "text/html; charset=utf-8");
+
+      expect(resp.text).to.equal("<foo/>");
+    });
+
+    it("put body as string without content-type is ok", async () => {
+      const resp = await request(app)
+        .put("/content", "<foo/>")
+        .expect(200)
+        .expect("content-type", "text/html; charset=utf-8");
+
+      expect(resp.text).to.equal("<foo/>");
+    });
+
+    it("put body as string and then change to json is ok", async () => {
+      const resp = await request(app)
+        .put("/api", "<foo/>")
+        .send({ foo: "bar" })
+        .json()
+        .expect(200)
+        .expect("content-type", "application/json; charset=utf-8");
+
+      expect(resp.body).to.deep.equal({ foo: "bar" });
+    });
+
+    it("put null is ok", async () => {
+      const resp = await request(app)
+        .put("/api", null)
+        .json()
+        .expect(200)
+        .expect("content-type", "application/json; charset=utf-8");
+
+      expect(resp.body).to.deep.equal({});
+    });
+  });
+
+  describe("head", () => {
+    it("head returns no body", async () => {
+      const resp = await request(app)
+        .head("/")
+        .expect(200)
+        .expect("content-length", "7");
+      expect(resp.text).to.be.undefined;
+    });
+  });
+
   describe("expect status code", () => {
     it("returns 200", async () => {
       const resp1 = await request(app)
@@ -103,16 +194,6 @@ describe("httptest", () => {
     });
   });
 
-  describe("head", () => {
-    it("head returns no body", async () => {
-      const resp = await request(app)
-        .head("/")
-        .expect(200)
-        .expect("content-length", "7");
-      expect(resp.text).to.be.undefined;
-    });
-  });
-
   describe("set", () => {
     it("sets header from string", async () => {
       const resp = await request(app)
@@ -151,19 +232,20 @@ describe("httptest", () => {
       const resp = await request(app)
         .post("/api")
         .send({ a: "b" })
-        .expect(200);
+        .expect(201);
 
       expect(JSON.parse(resp.body)).to.deep.equal({ a: "b" });
     });
   });
 
   describe("json", () => {
-    it("expects json body", async () => {
+    it("returns body as object", async () => {
       const resp = await request(app)
         .post("/api")
         .send({ a: "b" })
         .json()
-        .expect(200);
+        .expect("content-type", "application/json; charset=utf-8")
+        .expect(201);
 
       expect(resp.body).to.deep.equal({ a: "b" });
     });

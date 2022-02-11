@@ -20,7 +20,15 @@ app.post("/", (req, res) => {
 });
 
 app.post("/api", bodyParser.json(), (req, res) => {
-  return res.send(req.body);
+  return res.status(201).send(req.body);
+});
+
+app.put("/content", bodyParser.text({ type: "*/*" }), (req, res) => {
+  return res.status(200).send(req.body);
+});
+
+app.put("/api", bodyParser.json(), (req, res) => {
+  return res.status(200).send(req.body);
 });
 
 app.post("/redirect", (req, res) => {
