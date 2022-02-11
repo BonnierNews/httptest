@@ -18,7 +18,6 @@ class SuperRequest extends Promise {
     this.resolve = res;
     this.reject = rej;
     this._asserts = [];
-
     this._options = {
       headers: {},
       query: null,
@@ -29,20 +28,15 @@ class SuperRequest extends Promise {
   get options() {
     const { query, redirects, ...rest } = this._options;
     return {
-      ...(query ? {
+      ...(query && {
         searchParams: query,
-      } : undefined),
-      ...(redirects ? {
+      }),
+      ...(redirects && {
         followRedirect: true,
         maxRedirects: redirects,
-      } : undefined),
+      }),
       ...rest,
     };
-  }
-
-  defer(task) {
-    this.task = task;
-    return this;
   }
 
   set(nameOrObj, value) {
@@ -81,44 +75,40 @@ class SuperRequest extends Promise {
     const first = typeof args[0];
     switch (first) {
       case "number":
-        this._asserts.push({ fn: this._assertStatusCode, args });
+        this._asserts.push({ fn: assertStatusCode, args });
         break;
       case "string":
-        this._asserts.push({ fn: this._assertHeader, args });
+        this._asserts.push({ fn: assertHeader, args });
         break;
     }
     return this;
   }
 
-  _assertStatusCode(res, statusCode) {
-    assert.equal(res.statusCode, statusCode, "unexpected status code");
-  }
-
-  _assertHeader(res, name, expected) {
-    const lname = name.toLowerCase();
-    if (expected instanceof RegExp) {
-      return assert.match(res.headers[lname], expected, `unexpected header ${lname}`);
-    }
-
-    assert.equal(res.headers[lname], expected, `unexpected header ${lname}`);
-  }
-
-  async execute(...args) {
-    if (!this.task) {
-      return this.reject(new Error("No task defined in deferred promise."));
-    }
+  async execute(makeRequest) {
     try {
-      args.push(this);
-      const res = await this.task.call(this, ...args);
+      const res = await makeRequest();
       for (const test of this._asserts.splice(0)) {
         test.fn.call(this, res, ...test.args);
       }
-      this.resolve(this._result || res);
+      this.resolve(res);
     } catch (err) {
       this.reject(err);
     }
     return this;
   }
+}
+
+function assertStatusCode(res, statusCode) {
+  assert.equal(res.statusCode, statusCode, "unexpected status code");
+}
+
+function assertHeader(res, name, expected) {
+  const lname = name.toLowerCase();
+  if (expected instanceof RegExp) {
+    return assert.match(res.headers[lname], expected, `unexpected header ${lname}`);
+  }
+
+  assert.equal(res.headers[lname], expected, `unexpected header ${lname}`);
 }
 
 function Supertest(initiator, options) {
@@ -128,8 +118,8 @@ function Supertest(initiator, options) {
   this.jar = options?.jar;
 }
 
-Supertest.agent = function agent(expressApp) {
-  return new Supertest(expressApp, { jar: new CookieJar() });
+Supertest.agent = function agent(initiator) {
+  return new Supertest(initiator, { jar: new CookieJar() });
 };
 
 Supertest.prototype._makeRequest = function makeRequest(path, options) {
@@ -231,7 +221,7 @@ Supertest.prototype.del = Supertest.prototype.delete;
 
 Supertest.prototype.request = function request(method, path, options) {
   const deferred = new SuperRequest();
-  deferred.defer(() => {
+  deferred.execute(() => {
     return new Promise((resolve, reject) => {
       process.nextTick(() => {
         return this._makeRequest(path, {
@@ -242,6 +232,5 @@ Supertest.prototype.request = function request(method, path, options) {
       });
     });
   });
-  deferred.execute();
   return deferred;
 };
