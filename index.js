@@ -5,9 +5,9 @@ const got = require("got");
 const assert = require("assert");
 const { CookieJar } = require("cookiejar");
 
-module.exports = Supertest;
+module.exports = HttpTest;
 
-class SuperRequest extends Promise {
+class HttpTestRequest extends Promise {
   constructor(def = () => {}) {
     let res, rej;
     super((resolve, reject) => {
@@ -111,18 +111,18 @@ function assertHeader(res, name, expected) {
   assert.equal(res.headers[lname], expected, `unexpected header ${lname}`);
 }
 
-function Supertest(initiator, options) {
-  if (!(this instanceof Supertest)) return new Supertest(initiator, options);
+function HttpTest(initiator, options) {
+  if (!(this instanceof HttpTest)) return new HttpTest(initiator, options);
   this._initiator = initiator;
   this._options = options;
   this.jar = options?.jar;
 }
 
-Supertest.agent = function agent(initiator) {
-  return new Supertest(initiator, { jar: new CookieJar() });
+HttpTest.agent = function agent(initiator) {
+  return new HttpTest(initiator, { jar: new CookieJar() });
 };
 
-Supertest.prototype._makeRequest = function makeRequest(path, options) {
+HttpTest.prototype._makeRequest = function makeRequest(path, options) {
   let server, origin;
   const type = typeof this._initiator;
   switch (type) {
@@ -197,30 +197,30 @@ Supertest.prototype._makeRequest = function makeRequest(path, options) {
   });
 };
 
-Supertest.prototype.get = function get(path) {
+HttpTest.prototype.get = function get(path) {
   return this.request("get", path);
 };
 
-Supertest.prototype.head = function head(path) {
+HttpTest.prototype.head = function head(path) {
   return this.request("head", path);
 };
 
-Supertest.prototype.post = function post(path, body) {
+HttpTest.prototype.post = function post(path, body) {
   return this.request("post", path, { body });
 };
 
-Supertest.prototype.put = function put(path, body) {
+HttpTest.prototype.put = function put(path, body) {
   return this.request("put", path, { body });
 };
 
-Supertest.prototype.delete = function del(path) {
+HttpTest.prototype.delete = function del(path) {
   return this.request("delete", path);
 };
 
-Supertest.prototype.del = Supertest.prototype.delete;
+HttpTest.prototype.del = HttpTest.prototype.delete;
 
-Supertest.prototype.request = function request(method, path, options) {
-  const deferred = new SuperRequest();
+HttpTest.prototype.request = function request(method, path, options) {
+  const deferred = new HttpTestRequest();
   deferred.execute(() => {
     return new Promise((resolve, reject) => {
       process.nextTick(() => {
