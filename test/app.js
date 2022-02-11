@@ -13,10 +13,22 @@ app.get("/", (req, res) => {
   return res.send("<html/>");
 });
 
+app.head("/", (req, res) => {
+  res.set("content-length", "<html/>".length);
+  res.set("content-type", "text/html; charset=utf-8");
+  res.writeHead(200);
+  res.end();
+});
+
 app.post("/", (req, res) => {
   res.set("in-url", req.url);
   res.set("set-cookie", [ "a=b" ]);
-  return res.send("<html/>");
+  res.set("content-type", req.get("content-type"));
+  return req.pipe(res);
+});
+
+app.delete("/", (req, res) => {
+  return res.status(204).send();
 });
 
 app.post("/api", bodyParser.json(), (req, res) => {
@@ -31,9 +43,18 @@ app.put("/api", bodyParser.json(), (req, res) => {
   return res.status(200).send(req.body);
 });
 
-app.post("/redirect", (req, res) => {
+app.post("/see-other", (req, res) => {
   res.set("set-cookie", [ "redirect=root; path=/" ]);
-  return res.redirect("/");
+  return res.redirect(303, "/");
+});
+
+app.post("/redirectverb", (req, res) => {
+  res.set("set-cookie", [ "redirect=root; path=/" ]);
+  return res.redirect(307, "/");
+});
+
+app.get("/redirectchain", (req, res) => {
+  return res.redirect("/redirectchain");
 });
 
 app.get("/parse/:statusCode", (req, res, next) => {
@@ -60,8 +81,12 @@ app.get("/api/parse/:statusCode", (req, res, next) => {
   }
 });
 
+app.use((req, res) => {
+  res.status(404).send(new Error(`Not found ${req.path}`));
+});
+
 app.use((err, req, res) => {
-  res.status(500).send(err);
+  return res.status(500).send(err);
 });
 
 module.exports = app;

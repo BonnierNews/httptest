@@ -22,11 +22,12 @@ class HttpTestRequest extends Promise {
       headers: {},
       query: null,
       redirects: null,
+      contentType: null,
     };
   }
 
   get options() {
-    const { query, redirects, ...rest } = this._options;
+    const { query, redirects, headers, contentType, ...rest } = this._options;
     return {
       ...(query && {
         searchParams: query,
@@ -35,6 +36,10 @@ class HttpTestRequest extends Promise {
         followRedirect: true,
         maxRedirects: redirects,
       }),
+      headers: {
+        ...(contentType && { "content-type": contentType }),
+        ...headers,
+      },
       ...rest,
     };
   }
@@ -55,14 +60,12 @@ class HttpTestRequest extends Promise {
     const options = this._options;
     switch (type) {
       case "string":
-        if (!("content-type" in options.headers)) {
-          options.headers["content-type"] = "text/plain";
-        }
+        options.contentType = "text/plain";
         options.body = body;
         break;
       case "object": {
         if (body) options.json = body;
-        delete options.headers["content-type"];
+        options.contentType = null;
         delete options.body;
         break;
       }
@@ -187,7 +190,7 @@ HttpTest.prototype._makeRequest = function makeRequest(path, options) {
   const type = typeof this._initiator;
   switch (type) {
     case "function": {
-      server = this.server = http.createServer(this._initiator);
+      server = http.createServer(this._initiator);
       const port = server.listen(0).address().port;
       origin = `http://127.0.0.1:${port}`;
       break;
@@ -205,7 +208,6 @@ HttpTest.prototype._makeRequest = function makeRequest(path, options) {
       jar.setCookies(options?.headers?.cookie, url.hostname, "/");
     }
     const cookie = jar.getCookies({ path, domain: url.hostname }).toValueString();
-    options.headers = options.headers || {};
     options.headers.cookie = cookie;
   }
 
@@ -219,32 +221,20 @@ HttpTest.prototype._makeRequest = function makeRequest(path, options) {
         (response) => {
           if (server) server.close();
 
-          if (response.req.method !== "HEAD") {
-            Object.defineProperty(response, "text", {
-              enumerable: false,
-              get() {
-                if (!response.rawBody) return undefined;
-                return response.rawBody.toString();
-              },
-            });
-          }
-
-          if (jar && response.headers["set-cookie"]) {
-            for (const c of response.headers["set-cookie"]) {
-              jar.setCookie(c);
-            }
-          }
+          if (jar) setCookies(jar, response.headers["set-cookie"]);
+          Object.defineProperty(response, "text", {
+            enumerable: false,
+            get() {
+              return response.rawBody.toString();
+            },
+          });
 
           return response;
         },
       ],
       beforeRedirect: [
         (_, response) => {
-          if (jar && response.headers["set-cookie"]) {
-            for (const c of response.headers["set-cookie"]) {
-              jar.setCookie(c);
-            }
-          }
+          if (jar) setCookies(jar, response.headers["set-cookie"]);
         },
       ],
       beforeError: [
@@ -256,3 +246,11 @@ HttpTest.prototype._makeRequest = function makeRequest(path, options) {
     },
   });
 };
+
+function setCookies(jar, setHeaders) {
+  if (!setHeaders?.length) return;
+
+  for (const c of setHeaders) {
+    jar.setCookie(c);
+  }
+}
