@@ -46,8 +46,8 @@ All http verb functions returns a promise and some utility functions
 - `set(arg[, arg])`: set header
 - `query(arg)`: set query
 - `send(arg)`: send body
-- `json([bool])`: set/unset expect json response
-- `redirects(arg)`: set number of max redirects, defaults to 0
+- `json([bool = true])`: set/unset expect json response, default is set
+- `redirects(maxRedirects)`: set number of max redirects, defaults to 0
 - `expect(arg[, arg])`: expect statusCode or header with value
 
 ## `HttpTest.agent(initiator, options)`

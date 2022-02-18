@@ -198,6 +198,9 @@ HttpTest.prototype._makeRequest = function makeRequest(path, options) {
     case "number":
       origin = `http://127.0.0.1:${this._initiator}`;
       break;
+    case "string":
+      origin = this._initiator;
+      break;
     default:
       origin = `http://127.0.0.1:${process.env.PORT}`;
   }

@@ -40,3 +40,5 @@ config/_revision
 .*.sw[a-z]
 
 package-lock.json
+tmp
+*.log
