@@ -29,9 +29,7 @@ class HttpTestRequest extends Promise {
   get options() {
     const { query, redirects, headers, contentType, ...rest } = this._options;
     return {
-      ...(query && {
-        searchParams: query,
-      }),
+      ...(query && { searchParams: query }),
       ...(redirects && {
         followRedirect: true,
         maxRedirects: redirects,

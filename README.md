@@ -7,15 +7,16 @@ HTTP testing library
 
 # API
 
-## `[new ]HttpTest(initiator[, options])`
+## `[new ]HttpTest([initiator[, options]])`
 
 Arguments:
-- `ìnititator`: Optional argument defaults to `process.env.PORT`
-    - Express App: will be used to create a http server, can actually be any function that will act as argument to `http.createServer`
-    - port: port number to local http server (`process.env.PORT`)
+- `ìnititator`: Optional http request origin, defaults to `process.env.PORT` as port
+    - origin: fully fledged origin with protocol, host, and port
+    - port: port number to local http server
+    - Express App: will be used to create a http server, can actually be any function that will act as `http.createServer` requestListener argument
 - `options`: Optional object with options to pass to got
 
-Returns verb functions:
+Returns [verb](#verb) functions:
 - `get(path)`: http get
 - `post(path[, body])`: http get
 - `put(path[, body])`: http get
@@ -39,7 +40,7 @@ describe("expect", () => {
 });
 ```
 
-### Verbs
+### Verb
 
 All http verb functions returns a promise and some utility functions
 
@@ -52,4 +53,4 @@ All http verb functions returns a promise and some utility functions
 
 ## `HttpTest.agent(initiator, options)`
 
-Returns HTTP tester with cookie jar exposed as property `jar`. Subsequent requests will forward cookies.
+Returns HTTP tester with cookie jar exposed as property `jar`. Subsequent requests will forward cookies that match origin and path.

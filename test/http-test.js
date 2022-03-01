@@ -21,6 +21,18 @@ describe("httptest", () => {
       }
     });
 
+    it("works with fully fledged origin", async () => {
+      const server = http.createServer(app);
+      try {
+        server.listen(0);
+        await request(`http://127.0.0.1:${server.address().port}`)
+          .get("/")
+          .expect(200);
+      } finally {
+        server.close();
+      }
+    });
+
     it("defaults to process.env.PORT", async () => {
       const server = http.createServer(app);
       try {
@@ -221,9 +233,7 @@ describe("httptest", () => {
     it("sets headers from object", async () => {
       const resp = await request(app)
         .head("/")
-        .set({
-          Cookie: "channel=mobile; canShowFullpageAds=1; didomi_token=CONSENTDATA",
-        })
+        .set({ Cookie: "channel=mobile; canShowFullpageAds=1; didomi_token=CONSENTDATA" })
         .expect(200);
 
       expect(resp.headers["in-cookie"]).to.equal("channel=mobile; canShowFullpageAds=1; didomi_token=CONSENTDATA");
