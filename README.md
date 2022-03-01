@@ -16,7 +16,7 @@ Arguments:
     - Express App: will be used to create a http server, can actually be any function that will act as `http.createServer` requestListener argument
 - `options`: Optional object with options to pass to got
 
-Returns [verb](#verb) functions:
+Returns [verb](#verb):
 - `get(path)`: http get
 - `post(path[, body])`: http get
 - `put(path[, body])`: http get
@@ -24,21 +24,6 @@ Returns [verb](#verb) functions:
 - `del(path[, body])`: http delete
 - `head(path)`: http head
 - `request(method, path, options)`: make http request with method
-
-Example:
-```js
-const app = require("../app");
-const request = require("@bonniernews/httptest");
-
-describe("expect", () => {
-  it("expect 200", async () => {
-    await request(app)
-      .get("/")
-      .expect(200)
-      .expect("content-type", "text/html; charset=utf-8");
-  });
-});
-```
 
 ### Verb
 
@@ -54,3 +39,35 @@ All http verb functions returns a promise and some utility functions
 ## `HttpTest.agent(initiator, options)`
 
 Returns HTTP tester with cookie jar exposed as property `jar`. Subsequent requests will forward cookies that match origin and path.
+
+## `HttpTest.(initiator, options)`
+
+Returns HTTP tester with cookie jar exposed as property `jar`. Subsequent requests will forward cookies that match origin and path.
+
+## Example
+
+```js
+const app = require("../app");
+const HttpTest = require("@bonniernews/httptest");
+
+it("get replies 200", async () => {
+  await new HttpTest(app)
+    .get("/")
+    .expect(200)
+    .expect("content-type", "text/html; charset=utf-8");
+});
+
+it("post also replies 200", async () => {
+  await HttpTest(app)
+    .post("/", {})
+    .expect(200)
+    .expect("content-type", "application/json; charset=utf-8");
+});
+
+it("origin replies with 200", async () => {
+  await HttpTest("https://example.com")
+    .get("/")
+    .expect(200)
+    .expect("content-type", "text/html; charset=utf-8");
+});
+```

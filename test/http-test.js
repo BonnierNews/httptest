@@ -2,7 +2,6 @@
 "use strict";
 
 const app = require("./app");
-const http = require("http");
 const request = require("..");
 
 const PORT = process.env.PORT;
@@ -10,9 +9,8 @@ const PORT = process.env.PORT;
 describe("httptest", () => {
   describe("initate", () => {
     it("works with port only", async () => {
-      const server = http.createServer(app);
+      const server = await request.startHttpServer(app);
       try {
-        server.listen(0);
         await request(server.address().port)
           .get("/")
           .expect(200);
@@ -22,9 +20,8 @@ describe("httptest", () => {
     });
 
     it("works with fully fledged origin", async () => {
-      const server = http.createServer(app);
+      const server = await request.startHttpServer(app);
       try {
-        server.listen(0);
         await request(`http://127.0.0.1:${server.address().port}`)
           .get("/")
           .expect(200);
@@ -34,9 +31,9 @@ describe("httptest", () => {
     });
 
     it("defaults to process.env.PORT", async () => {
-      const server = http.createServer(app);
+      const server = await request.startHttpServer(app);
       try {
-        process.env.PORT = server.listen(0).address().port;
+        process.env.PORT = server.address().port;
         await request()
           .get("/")
           .expect(200);

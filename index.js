@@ -182,15 +182,14 @@ HttpTest.prototype.request = function request(method, path, options = {}) {
   return deferred;
 };
 
-HttpTest.prototype._makeRequest = function makeRequest(path, options) {
+HttpTest.prototype._makeRequest = async function makeRequest(path, options) {
   let server, origin;
   const jar = this.jar;
   const type = typeof this._initiator;
   switch (type) {
     case "function": {
-      server = http.createServer(this._initiator);
-      const port = server.listen(0).address().port;
-      origin = `http://127.0.0.1:${port}`;
+      server = await HttpTest.startHttpServer(this._initiator);
+      origin = `http://127.0.0.1:${server.address().port}`;
       break;
     }
     case "number":
@@ -245,6 +244,15 @@ HttpTest.prototype._makeRequest = function makeRequest(path, options) {
         },
       ],
     },
+  });
+};
+
+HttpTest.startHttpServer = function startHttpServer(requestListener) {
+  const server = http.createServer(requestListener);
+  return new Promise((resolve) => {
+    server.listen(0, () => {
+      return resolve(server);
+    });
   });
 };
 
