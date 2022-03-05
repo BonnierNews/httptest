@@ -7,13 +7,13 @@ HTTP testing library
 
 # API
 
-## `[new ]HttpTest([initiator[, options]])`
+## `[new ]HttpTest([origin[, options]])`
 
 Arguments:
-- `ìnititator`: Optional http request origin, defaults to `process.env.PORT` as port
+- `origin`: Optional http request origin, defaults to `process.env.PORT` as port
     - origin: fully fledged origin with protocol, host, and port
     - port: port number to local http server
-    - Express App: will be used to create a http server, can actually be any function that will act as `http.createServer` requestListener argument
+    - Express App: will be used to create a http server, can actually be any function that will act as `http.createServer` requestListener
 - `options`: Optional object with options to pass to got
 
 Returns [verb](#verb):
@@ -36,11 +36,7 @@ All http verb functions returns a promise and some utility functions
 - `redirects(maxRedirects)`: set number of max redirects, defaults to 0
 - `expect(arg[, arg])`: expect statusCode or header with value
 
-## `HttpTest.agent(initiator, options)`
-
-Returns HTTP tester with cookie jar exposed as property `jar`. Subsequent requests will forward cookies that match origin and path.
-
-## `HttpTest.(initiator, options)`
+## `HttpTest.agent(origin, options)`
 
 Returns HTTP tester with cookie jar exposed as property `jar`. Subsequent requests will forward cookies that match origin and path.
 
