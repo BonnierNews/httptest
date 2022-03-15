@@ -94,8 +94,21 @@ class HttpTestRequest extends Promise {
         this._asserts.push({ fn: assertStatusCode, args });
         break;
       case "string":
-        this._asserts.push({ fn: assertHeader, args });
+        if (args.length === 1) {
+          this._asserts.push({ fn: assertBody, args });
+        } else {
+          this._asserts.push({ fn: assertHeader, args });
+        }
         break;
+      case "object":
+        this._asserts.push({ fn: assertBody, args });
+        break;
+      default: {
+        if (args.length === 1) {
+          this._asserts.push({ fn: assertBody, args });
+        }
+        break;
+      }
     }
     return this;
   }
@@ -125,6 +138,16 @@ function assertHeader(res, name, expected) {
   }
 
   assert.equal(res.headers[lname], expected, `unexpected header ${lname}`);
+}
+
+function assertBody(res, expected) {
+  if (expected instanceof RegExp) {
+    return assert.match(res.text, expected, "unexpected body");
+  } else if (expected !== null && typeof expected === "object") {
+    return assert.deepStrictEqual(res.body, expected, "unexpected body");
+  }
+
+  assert.equal(res.text, expected, "unexpected body");
 }
 
 function HttpTest(initiator, options) {

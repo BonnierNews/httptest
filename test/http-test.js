@@ -217,6 +217,84 @@ describe("httptest", () => {
     });
   });
 
+  describe("expect body", () => {
+    it("ok if body matches string", () => {
+      return request(app)
+        .get("/")
+        .expect(200)
+        .expect("<html/>");
+    });
+
+    it("ok if body matches regex", () => {
+      return request(app)
+        .get("/")
+        .expect(200)
+        .expect(/<html/);
+    });
+
+    it("ok if body matches json", () => {
+      return request(app)
+        .post("/", { expected: true })
+        .expect(200)
+        .json()
+        .expect({ expected: true });
+    });
+
+    it("ok if body matches nested json", () => {
+      return request(app)
+        .post("/", {
+          expected: true,
+          prop: { also: "ok" },
+        })
+        .expect(200)
+        .json()
+        .expect({
+          expected: true,
+          prop: { also: "ok" },
+        });
+    });
+
+    it("throws if body text doesn't match string", async () => {
+      try {
+        await request(app)
+          .get("/")
+          .expect(200)
+          .expect("<thml/>");
+      } catch (e) {
+        var err = e;
+      }
+      expect(err).to.be.an("error");
+      expect(err).to.match(/unexpected body/);
+    });
+
+    it("throws if body text doesn't match regex", async () => {
+      try {
+        await request(app)
+          .get("/")
+          .expect(200)
+          .expect(/<thml/);
+      } catch (e) {
+        var err = e;
+      }
+      expect(err).to.be.an("error");
+      expect(err).to.match(/unexpected body/);
+    });
+
+    it("throws if body doesn't deep strict equal object", async () => {
+      try {
+        await request(app)
+          .post("/", { expected: true })
+          .expect(200)
+          .json()
+          .expect({ expected: "false" });
+      } catch (e) {
+        var err = e;
+      }
+      expect(err).to.be.an("error");
+      expect(err).to.match(/unexpected body/);
+    });
+  });
+
   describe("set", () => {
     it("sets header from string", async () => {
       const resp = await request(app)

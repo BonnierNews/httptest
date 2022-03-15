@@ -34,7 +34,7 @@ All http verb functions returns a promise and some utility functions
 - `send(arg)`: send body
 - `json([bool = true])`: set/unset expect json response, default is set
 - `redirects(maxRedirects)`: set number of max redirects, defaults to 0
-- `expect(arg[, arg])`: expect statusCode or header with value
+- `expect(arg[, arg])`: expect statusCode, header with value, and body
 
 ## `HttpTest.agent(origin, options)`
 
@@ -56,8 +56,10 @@ it("get replies 200", async () => {
 it("post also replies 200", async () => {
   await HttpTest(app)
     .post("/", {})
+    .json()
     .expect(200)
-    .expect("content-type", "application/json; charset=utf-8");
+    .expect("content-type", "application/json; charset=utf-8")
+    .expect({ foo: "bar" });
 });
 
 it("origin replies with 200", async () => {
