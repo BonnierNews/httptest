@@ -103,6 +103,9 @@ class HttpTestRequest extends Promise {
       case "object":
         this._asserts.push({ fn: assertBody, args });
         break;
+      case "function":
+        this._asserts.push({ fn: args[0], args: [] });
+        break;
       default: {
         if (args.length === 1) {
           this._asserts.push({ fn: assertBody, args });

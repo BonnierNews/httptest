@@ -1,6 +1,6 @@
 {
   "name": "@bonniernews/httptest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -34,7 +34,7 @@
     "c8": "^7.11.0",
     "chai": "^4.3.6",
     "eslint": "^8.10.0",
-    "eslint-config-exp": "^0.1.0",
+    "eslint-config-exp": "^0.2.0",
     "express": "^4.17.3",
     "mocha": "^9.2.1",
     "nock": "^13.2.4"

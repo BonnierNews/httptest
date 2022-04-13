@@ -68,4 +68,13 @@ it("origin replies with 200", async () => {
     .expect(200)
     .expect("content-type", "text/html; charset=utf-8");
 });
+
+it("ok if body matches string", () => {
+  return request(app)
+    .get("/")
+    .expect(200)
+    .expect((res) => {
+      expect(res.text).to.equal("<html/>");
+    });
+});
 ```

@@ -295,6 +295,41 @@ describe("httptest", () => {
     });
   });
 
+  describe("expect response", () => {
+    it("ok if body matches string", () => {
+      return request(app)
+        .get("/")
+        .expect(200)
+        .expect((res) => {
+          expect(res.text).to.equal("<html/>");
+        });
+    });
+
+    it("throws if body text doesn't match string", async () => {
+      try {
+        await request(app)
+          .get("/")
+          .expect(200)
+          .expect((res) => {
+            expect(res.text).to.not.equal("<html/>");
+          });
+      } catch (e) {
+        var err = e;
+      }
+      expect(err.message).to.contain("expected '<html/>' to not equal '<html/>'");
+    });
+
+    it("ok if header matches string", () => {
+      return request(app)
+        .get("/")
+        .expect(200)
+        .expect((res) => {
+          expect(res.headers).to.have.property("content-type", "text/html; charset=utf-8");
+        });
+    });
+
+  });
+
   describe("set", () => {
     it("sets header from string", async () => {
       const resp = await request(app)
