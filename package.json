@@ -1,7 +1,7 @@
 {
   "name": "@bonniernews/httptest",
-  "version": "1.1.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "HTTP testing library",
   "main": "index.js",
   "scripts": {
     "test": "mocha",
