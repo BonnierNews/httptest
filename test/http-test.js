@@ -496,13 +496,14 @@ describe("httptest", () => {
   });
 
   describe("error", () => {
-    it("api throws is request is aborted", async () => {
+    it("api throws if request is aborted", async () => {
       try {
-        await request(app, { bodyTimeout: 50 }).get("/api/parse/204");
+        await request(app, { bodyTimeout: 50 }).get("/econnreset");
       } catch (e) {
         var err = e;
       }
 
+      expect(err).to.be.ok;
       expect(err).to.have.property("code", "ECONNRESET");
     });
   });
