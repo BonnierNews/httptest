@@ -75,10 +75,18 @@ app.get("/api/parse/:statusCode", (req, res, next) => {
   try {
     res.set("content-length", 0);
     res.set("content-type", "application/json");
-    res.status(req.params.statusCode).send({});
+    const statusCode = parseInt(req.params.statusCode);
+    if (statusCode === 204) {
+      return res.socket.destroy();
+    }
+    res.status(statusCode).send({});
   } catch (err) {
     next(err);
   }
+});
+
+app.get("/econnreset", (req, res) => {
+  return res.socket.destroy();
 });
 
 app.use((req, res) => {

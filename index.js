@@ -5,6 +5,8 @@ const got = require("got");
 const assert = require("assert");
 const { CookieJar } = require("cookiejar");
 
+const jsonContentTypePattern = /application\/json/i;
+
 module.exports = HttpTest;
 
 class HttpTestRequest extends Promise {
@@ -73,7 +75,7 @@ class HttpTestRequest extends Promise {
 
   json(value = true) {
     if (value) this._options.responseType = "json";
-    else delete this._options.responseType;
+    else this._options.responseType = "text";
     return this;
   }
 
@@ -119,6 +121,9 @@ class HttpTestRequest extends Promise {
   async execute(makeRequest) {
     try {
       const res = await makeRequest();
+      if (!("responseType" in this._options) && jsonContentTypePattern.test(res.headers["content-type"])) {
+        res.body = JSON.parse(res.text);
+      }
       for (const test of this._asserts.splice(0)) {
         test.fn.call(this, res, ...test.args);
       }

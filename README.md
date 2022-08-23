@@ -77,4 +77,12 @@ it("ok if body matches string", () => {
       expect(res.text).to.equal("<html/>");
     });
 });
+
+it("response content-type json returns body as JSON", async () => {
+  await HttpTest(app)
+    .post("/", {})
+    .expect(200)
+    .expect("content-type", "application/json; charset=utf-8")
+    .expect({ foo: "bar" });
+});
 ```
